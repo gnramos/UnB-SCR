@@ -1,71 +1,50 @@
-# GrandmaDriver Makefile
+# @file Makefile
 # 
-# Adapted from SimpleDriver
-
-CC            =  g++
-CPPFLAGS      = -Wall -g 
-
-# Uncomment the following line for a verbose client
-#CPPFLAGS      = -Wall -g -D __UDP_CLIENT_VERBOSE__
+# @author Guilherme N. Ramos
+# 
+# Builds the driver specified by DRIVER_CLASS. This assumes a few things:
+# 1) The files are set in the src/DRIVER_CLASS directory.
+# 2) The driver files are DRIVER_CLASS.h & DRIVER_CLASS.cpp.
+# 
+# The idea is to create .o files and the executable file in the /bin directory.
+# 
 
 #Put here the name of your driver class
 DRIVER_CLASS = GrandmaDriver
-CLIENT_INCLUDE = ../client
-CLIENT_SRC = $(CLIENT_INCLUDE)/SimpleParser.cpp $(CLIENT_INCLUDE)/CarState.cpp $(CLIENT_INCLUDE)/CarControl.cpp $(CLIENT_INCLUDE)/client.cpp
 
-#Put here the filename of your driver class header 
-DRIVER_INCLUDE = '"../$(DRIVER_CLASS)/$(DRIVER_CLASS).h"' 
-EXEC = $(DRIVER_CLASS)_client
-SRC = $(CLIENT_SRC) $(DRIVER_CLASS).cpp
+# Add compilation flags (release versions should use only -Wall).
+CPPFLAGS = -Wall
+#CPPFLAGS = -Wall -g -D __UDP_CLIENT_VERBOSE__
+
+################################################################################
+# The rest should work automagically...
+CC =  g++
+
+TARGET_DIR = ../../bin
+
+DRIVER_INCLUDE = '"../$(DRIVER_CLASS)/$(DRIVER_CLASS).h"'
+DRIVER_OBJECT = $(DRIVER_CLASS).o
 
 EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER_CLASS) -D __DRIVER_INCLUDE__=$(DRIVER_INCLUDE)
 
-all: $(EXEC)
+CLIENT_INCLUDE = ../client
+CLIENT_OBJECTS = CarControl.o CarState.o SimpleParser.o
+CLIENT_SRC = $(CLIENT_INCLUDE)/client.cpp
 
-$(EXEC):
-	$(CC) $(CPPFLAGS) $(EXTFLAGS) $(SRC) -o $(EXEC) -I$(CLIENT_INCLUDE)
+OBJS = $(CLIENT_OBJECTS) $(DRIVER_OBJECT)
+OBJS := $(addprefix $(TARGET_DIR)/,$(OBJS))
+
+# Targets
+all: $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(DRIVER_CLASS)
+
+$(CLIENT_OBJECTS): %.o: $(CLIENT_INCLUDE)/%.cpp
+	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
+
+$(DRIVER_OBJECT): $(DRIVER_CLASS).cpp
+	$(CC) -c $(CPPFLAGS) -I$(CLIENT_INCLUDE) $(DRIVER_CLASS).cpp -o $(TARGET_DIR)/$(DRIVER_OBJECT)
+
+$(DRIVER_CLASS): $(OBJS) $(CLIENT_SRC)
+	$(CC) $(CPPFLAGS) $(EXTFLAGS) -I$(CLIENT_INCLUDE) $(CLIENT_SRC) -o $(TARGET_DIR)/$(DRIVER_CLASS) $(OBJS)
 
 clean:
-	rm $(EXEC)
-
-
-
-
-# # ga_driver Makefile
-# # 
-# # Copied from SimpleDriver
-
-# CC            =  g++
-# CPPFLAGS      = -Wall -g 
-
-# # Uncomment the following line for a verbose client
-# #CPPFLAGS      = -Wall -g -D __UDP_CLIENT_VERBOSE__
-
-# #Put here the name of your driver class
-# DRIVER_CLASS = GrandmaDriver
-# #Put here the filename of your driver class header 
-# DRIVER_INCLUDE = '"../$(DRIVER_CLASS)/$(DRIVER_CLASS).h"' 
-# DRIVER_OBJ = $(DRIVER_CLASS).o
-# EXEC = $(DRIVER_CLASS)_client
-# CLIENT_INCLUDE = $(CLIENT_INCLUDE)
-
-# EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER_CLASS) -D __DRIVER_INCLUDE__=$(DRIVER_INCLUDE)
-
-# CLIENT_OBJECTS = CarControl.o CarState.o SimpleParser.o
-
-# all: $(EXEC)
-
-# CarControl.o:
-#	$(CC) $(CPPFLAGS) $(CLIENT_INCLUDE)/CarControl.cpp -o $(CLIENT_INCLUDE)/CarControl.o -I$(CLIENT_INCLUDE) -c
-
-# CarState.o:
-#	$(CC) $(CPPFLAGS) $(CLIENT_INCLUDE)/CarState.cpp -o $(CLIENT_INCLUDE)/CarState.o -I$(CLIENT_INCLUDE) -c
-
-# SimpleParser.o:
-#	$(CC) $(CPPFLAGS) $(CLIENT_INCLUDE)/SimpleParser.cpp -o $(CLIENT_INCLUDE)/SimpleParser.o -I$(CLIENT_INCLUDE) -c
-
-# $(EXEC): $(CLIENT_OBJECTS) $(CLIENT_INCLUDE)/client.cpp $(DRIVER_CLASS).cpp
-#	$(CC) $(CPPFLAGS) $(EXTFLAGS) $(CLIENT_INCLUDE)/client.cpp $(DRIVER_CLASS).cpp -o $(EXEC) -I$(CLIENT_INCLUDE)
-
-# clean:
-#	rm -f $(CLIENT_INCLUDE)/*.o *.o $(EXEC)
+	rm -f $(OBJS) $(TARGET_DIR)/$(DRIVER_CLASS)
