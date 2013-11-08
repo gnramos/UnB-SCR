@@ -13,7 +13,7 @@
 # 
 # Example (assuming you have TORCS running with a race waiting for the clients:
 #   make DRIVER=SimpleDriver
-#   ./../bin/SimpleDriver
+#   ./bin/SimpleDriver
 
 
 # Add compilation flags.
