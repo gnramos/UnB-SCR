@@ -3,6 +3,7 @@
   * Implements output for drivers
   *
   * @author Claus Aranha (caranha@cs.tsukuba.ac.jp)
+  * @author Guilherme N. Ramos (gnramos@unb.br)
   */
 
 #ifndef LOGGER_H
@@ -11,31 +12,35 @@
 #include <string>
 using namespace std;
 
-
-/** A stupidly simple controller that tries to keep a constant speed while 
- * staying in the middle of the track. */
+/** Logs information. */
 class Logger {
  public:
-  /* Log Levels */
-  static const int LOG_DEBUG = 0; // Everything
-  static const int LOG_INFO = 1; // Performance/Evaluation
-  static const int LOG_ERROR = 2; // Error/warnings only
+  /** Log levels. */
+	enum Level {
+	Debug = 0, /**< Log everything. */ 
+	Info = 1,  /**< Log performance/evaluation. */ 
+	Error = 2  /**< Log error/warnings only. */ 
+ };
  protected:
-  int level;
+  Level level;
 
  public:
   /** Constructor. */
   Logger();
   
   /** Destructor. (Close output files) */
-  ~ Logger();
+  ~Logger();
 
-  /* Sets the verbosity */
-  void setLevel(int level); 
+  /** Sets the verbosity */
+  void setLevel(Level level); 
   
-  /* Output a message */
+  /** Output a message */
   void debug(string message);
+  
+  /** Output a message */
   void info(string message);
+  
+  /** Output a message */
   void error(string message);
 
  protected:

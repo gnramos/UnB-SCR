@@ -1,6 +1,7 @@
 # @file Makefile
 # 
-# @author Guilherme N. Ramos
+# @author Claus Aranha (caranha@cs.tsukuba.ac.jp)
+# @author Guilherme N. Ramos (gnramos@unb.br)
 # 
 # Builds the controller specified by DRIVER argument. This assumes a few things:
 # 1) The files are set in the src/DRIVER directory.
@@ -48,7 +49,6 @@ OBJS = $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT)
 OBJS := $(addprefix $(TARGET_DIR)/,$(OBJS))
 
 
-
 # Set variables accordingly so client.cpp works
 EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__=$(DRIVER_HEADER)
 
@@ -59,7 +59,7 @@ $(CLIENT_OBJECTS): %.o: $(CLIENT_INCLUDE)/%.cpp
 	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
 
 $(DRIVER_OBJECT): $(DRIVER_SRC)
-	$(CC) -c $(CPPFLAGS) -I$(UTILS_INCLUDE) -I$(CLIENT_INCLUDE) $(DRIVER_INCLUDE) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJECT)
+	$(CC) -c $(CPPFLAGS) -I$(CLIENT_INCLUDE) -I$(DRIVER_INCLUDE) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJECT)
 
 $(DRIVER): $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(CLIENT_SRC)
 	$(CC) $(CPPFLAGS) $(EXTFLAGS) -I$(UTILS_INCLUDE) -I$(CLIENT_INCLUDE) -I$(DRIVER_INCLUDE) $(CLIENT_SRC) -o $(TARGET_DIR)/$(DRIVER) $(OBJS)
