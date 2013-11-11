@@ -8,6 +8,7 @@
 #include "CarControl.h"
 #include "CarState.h"
 #include "GrandmaDriver.h"
+#include "Logger.h"
 
 float
 getAcceleration (CarState & cs)
@@ -57,6 +58,20 @@ string
 GrandmaDriver::drive (string sensors)
 {
   CarState cs(sensors);
+
+  
+  // Example of logging output -- by Claus
+  std::ostringstream ss; // Ugly voodoo for converting a number to a string
+  ss << cs.getDistRaced(); // need to fix this later
+  std::string s(ss.str()); // use boost, or self library.
+
+  log.info(s);
+  // Question: how do I know how long I have been racing, to add a time delay
+  // for logs? (for example, log every second). Do I have to use system time?
+  // Example of logging output end
+
+
+
 
   float accel = getAcceleration(cs), brake = 0, steer =
     getSteering(cs), clutch = 0;

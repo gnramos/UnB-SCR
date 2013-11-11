@@ -8,7 +8,9 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <string.h>
+#include <string>
+using namespace std;
+
 
 /** A stupidly simple controller that tries to keep a constant speed while 
  * staying in the middle of the track. */
@@ -32,12 +34,12 @@ class Logger {
   void setLevel(int level); 
   
   /* Output a message */
-  void debug(char* message);
-  void info(char* message);
-  void error(char* message);
+  void debug(string message);
+  void info(string message);
+  void error(string message);
 
  protected:
-  void output(char* message);
+  void output(string message);
 };
 
 #endif				/* LOGGER_H */

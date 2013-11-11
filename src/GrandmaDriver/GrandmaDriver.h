@@ -11,6 +11,7 @@
 #include <string.h>
 #include "BaseDriver.h"
 #include "SimpleParser.h"
+#include "Logger.h"
 
 /** A stupidly simple controller that tries to keep a constant speed while 
  * staying in the middle of the track. */
@@ -29,6 +30,9 @@ class GrandmaDriver:public BaseDriver {
 	 * @param sensors the current world state.
 	 * @return a string representing the controlling action to perform. */
 	virtual string drive(string sensors);
+
+ protected:
+	Logger log; // Logger instance
 };
 
 #endif				/* GRANDMA_DRIVER_H */
