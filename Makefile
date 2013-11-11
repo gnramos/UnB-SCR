@@ -45,7 +45,7 @@ OBJS := $(addprefix $(TARGET_DIR)/,$(OBJS))
 EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__=$(DRIVER_HEADER)
 
 # Targets
-all: test_$(DRIVER) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(DRIVER)
+all: $(TARGET_DIR) test_$(DRIVER) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(DRIVER)
 
 $(CLIENT_OBJECTS): %.o: $(CLIENT_INCLUDE)/%.cpp
 	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
@@ -65,3 +65,6 @@ endif
 
 clean:
 	rm -f $(TARGET_DIR)/*
+
+$(TARGET_DIR):
+	mkdir $(TARGET_DIR)
