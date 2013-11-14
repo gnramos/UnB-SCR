@@ -17,7 +17,7 @@
 #   ./bin/SimpleDriver
 
 
-# Add compilation flags.
+# Set compilation flags.
 CPPFLAGS = -Wall
 #CPPFLAGS = -Wall -g -D __UDP_CLIENT_VERBOSE__
 
@@ -40,7 +40,7 @@ CLIENT_INCLUDE = $(SRC_DIR)/client
 CLIENT_OBJECTS = CarControl.o CarState.o SimpleParser.o WrapperBaseDriver.o
 CLIENT_SRC = $(CLIENT_INCLUDE)/client.cpp
 
-# Other Objects
+# Other Objects.
 UTILS_INCLUDE = $(SRC_DIR)/utils
 UTILS_OBJECTS = Logger.o
 UTILS_SRC = $(UTILS_INCLUDE)/logger.cpp
@@ -49,17 +49,17 @@ OBJS = $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT)
 OBJS := $(addprefix $(TARGET_DIR)/,$(OBJS))
 
 
-# Set variables accordingly so client.cpp works
+# Set variables accordingly so client.cpp works.
 EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__=$(DRIVER_HEADER)
 
-# Targets
+# Targets.
 all: $(TARGET_DIR) test_$(DRIVER) $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(DRIVER)
 
 $(CLIENT_OBJECTS): %.o: $(CLIENT_INCLUDE)/%.cpp
 	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
 
 $(DRIVER_OBJECT): $(DRIVER_SRC)
-	$(CC) -c $(CPPFLAGS) -I$(CLIENT_INCLUDE) -I$(DRIVER_INCLUDE) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJECT)
+	$(CC) -c $(CPPFLAGS) -I$(CLIENT_INCLUDE) -I$(UTILS_INCLUDE) -I$(DRIVER_INCLUDE) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJECT)
 
 $(DRIVER): $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(CLIENT_SRC)
 	$(CC) $(CPPFLAGS) $(EXTFLAGS) -I$(UTILS_INCLUDE) -I$(CLIENT_INCLUDE) -I$(DRIVER_INCLUDE) $(CLIENT_SRC) -o $(TARGET_DIR)/$(DRIVER) $(OBJS)
