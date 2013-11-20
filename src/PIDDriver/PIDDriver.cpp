@@ -4,13 +4,21 @@
   * Defines the PIDDriver.
   *
   * @author Guilherme N. Ramos (gnramos@unb.br)
+  * @author Claus Aranha (caranha@cs.tsukuba.ac.jp)
   */
 
 #include <math.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <stdlib.h>
 
 #include "CarControl.h"
 #include "CarState.h"
+#include "Logger.h"
 #include "PIDDriver.h"
+
 
 int
 getGear(CarState & cs) {
@@ -47,9 +55,74 @@ getSpeed(CarState & cs) {
 }
 
 
-PIDDriver::PIDDriver():BaseDriver(), speedPID(KP, KI, KD)
-{
+/**
+ * Decides whether to load a parameter file, or load default parameter values.
+ */
+PIDDriver::PIDDriver():BaseDriver(), speedPID(KP, KI, KD) {
+
+  // Ugly hack: can't pass an ofstream as a paramter of a function, 
+  // so we need to load it as a class attribute, and close it there after
+  // we're done with it.
+
+
+  /* Beware, Ugly hacks ahead:
+   * 
+   * Hack 1: Ideally, we want the filename to be passed as a parameter.
+   * But this requires changing client.cpp and Basedriver.h
+   * For now, we use a fixed file name string.
+   * 
+   * Hack 2: C++ doesn't seem to like passing file streams as function 
+   * parameters. So the input file is stored as a class attribute. Probably 
+   * there is a more proper way to do this.
+   */
+  param_stream.open ("parameter.par", ios::in); 
+
+  // test if the parameter file was found
+  if (param_stream.is_open()) {
+    log.info("Loading Parameters from file");
+    loadParameterFile();
+    param_stream.close();
+  } else {
+    log.info("Loading Default Parameters");
+    loadParameterDefault();
+  }
 };
+
+/**
+ * load parameter values from a file
+ *
+ * @TODO: This statically loads parameters in a fixed order inside the 
+ * file ("param1,param2,param3"). We probably want to change it to be a bit 
+ * more smart and flexible ("paramname=paramvalue", one per line, 
+ * or maybe read some xml file format)
+ *
+ */
+void
+PIDDriver::loadParameterFile() {
+  string item;
+  std::vector<string> params;
+
+
+  while (getline(param_stream,item,',')) { 
+    params.push_back(item);
+  }
+
+  finalSpeed = atof(params[0].c_str());
+  speedPID.set(atof(params[1].c_str()), 
+	       atof(params[2].c_str()),
+	       atof(params[3].c_str()));
+
+}
+
+/**
+ * load default values for the parameters
+ */
+void
+PIDDriver::loadParameterDefault() {
+  finalSpeed = 160;
+  speedPID.set(0.1,0.01,0.005);
+}
+
 
 PIDDriver::~PIDDriver()
 {

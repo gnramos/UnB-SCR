@@ -4,14 +4,18 @@
   * Describes the PIDDriver. 
   *
   * @author Guilherme N. Ramos (gnramos@unb.br)
+  * @author Claus Aranha (caranha@cs.tsukuba.ac.jp)
   */
 
 #ifndef PID_DRIVER_H
 #define PID_DRIVER_H
 
+#include <iostream>
+#include <fstream>
 #include <string.h>
 #include "BaseDriver.h"
 #include "SimpleParser.h"
+#include "Logger.h"
 
 #include "PID.h"
 
@@ -27,8 +31,8 @@
 class PIDDriver:public BaseDriver {
   public:
 
-	static const float finalSpeed = 100;		 /**< Final constant speed. */
-	PIDController speedPID;
+  float finalSpeed;	/** Target Speed **/
+  PIDController speedPID;
 
   public:
 
@@ -42,6 +46,12 @@ class PIDDriver:public BaseDriver {
 	 * @param sensors the current world state.
 	 * @return a string representing the controlling action to perform. */
 	virtual string drive(string sensors);
+ protected:
+	void loadParameterFile();
+	void loadParameterDefault();
+
+	Logger log; // Logger instance
+	ifstream param_stream; // Can't pass streams as parameters
 };
 
 #endif /* PID_DRIVER_H */

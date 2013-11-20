@@ -41,6 +41,12 @@ class PIDController {
 		return (Kp*current_error) + (Ki*integral) + (Kd*derivative);
 	}
 
+	void set(float p, float i, float d) {
+	  Kp = p;
+	  Ki = i;
+	  Kd = d;
+	}
+
   protected:
 	float Kp /**< Proportional gain. */ ;
 	float Ki /**< Integral gain. */ ;
