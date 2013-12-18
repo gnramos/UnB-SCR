@@ -14,12 +14,14 @@
 # 
 # Example (assuming you have TORCS running with a race waiting for the clients:
 #   make DRIVER=SimpleDriver
-#   ./bin/SimpleDriver
+#   ./bin/SimpleDriverClient
 
 
 # Set compilation flags.
-CPPFLAGS = -Wall
-#CPPFLAGS = -Wall -g -D __UDP_CLIENT_VERBOSE__
+CXXFLAGS = -Wall
+#CXXFLAGS = -Wall -g -D __UDP_CLIENT_VERBOSE__
+# UDP Client (in client.cpp) flags.
+EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__='"$(DRIVER).h"'
 
 # Set the compiler.
 CC =  g++
@@ -29,53 +31,59 @@ TARGET_DIR = bin
 SRC_DIR = src
 
 # Set variables according to the driver.
-DRIVER_CLASS = $(DRIVER)
-DRIVER_INCLUDE = $(SRC_DIR)/$(DRIVER_CLASS)
-DRIVER_HEADER = '"$(DRIVER_CLASS).h"'
-DRIVER_SRC = $(DRIVER_INCLUDE)/$(DRIVER).cpp
-DRIVER_OBJECT = $(DRIVER_CLASS).o
+DRIVER_DIR    = $(SRC_DIR)/$(DRIVER)
+DRIVER_SRC    = $(DRIVER_DIR)/$(DRIVER).cpp
+DRIVER_OBJ    = $(DRIVER).o
+DRIVER_TARGET = $(DRIVER)Client
 
 # Set client variables.
-CLIENT_INCLUDE = $(SRC_DIR)/client
-CLIENT_OBJECTS = CarControl.o CarState.o SimpleParser.o WrapperBaseDriver.o
-CLIENT_SRC = $(CLIENT_INCLUDE)/client.cpp
+UDP_CLIENT_DIR   = $(SRC_DIR)/client
+UDP_CLIENT_SRC   = $(UDP_CLIENT_DIR)/client.cpp
+UDP_CLIENT_OBJS := $(wildcard $(UDP_CLIENT_DIR)/*.cpp)
+UDP_CLIENT_OBJS := $(filter-out $(UDP_CLIENT_SRC), $(UDP_CLIENT_OBJS))
+UDP_CLIENT_OBJS := $(notdir $(UDP_CLIENT_OBJS:.cpp=.o))
 
-# Other Objects.
-UTILS_INCLUDE = $(SRC_DIR)/utils
-UTILS_OBJECTS = Logger.o
-UTILS_SRC = $(UTILS_INCLUDE)/logger.cpp
+# Auxiliary objects.
+UTILS_DIR   = $(SRC_DIR)/utils
+UTILS_SRC  := $(wildcard $(UTILS_DIR)/*.cpp)
+UTILS_OBJS := $(notdir $(UTILS_SRC:.cpp=.o))
 
-OBJS = $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT)
+OBJS = $(UTILS_OBJS) $(UDP_CLIENT_OBJS) $(DRIVER_OBJ)
 OBJS := $(addprefix $(TARGET_DIR)/,$(OBJS))
 
+###########
+# Targets #
+###########
+all: test_$(DRIVER) $(TARGET_DIR) $(DRIVER_TARGET)
 
-# Set variables accordingly so client.cpp works.
-EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__=$(DRIVER_HEADER)
-
-# Targets.
-all: $(TARGET_DIR) test_$(DRIVER) $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(DRIVER)
-
-$(CLIENT_OBJECTS): %.o: $(CLIENT_INCLUDE)/%.cpp
-	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
-
-$(DRIVER_OBJECT): $(DRIVER_SRC)
-	$(CC) -c $(CPPFLAGS) -I$(CLIENT_INCLUDE) -I$(UTILS_INCLUDE) -I$(DRIVER_INCLUDE) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJECT)
-
-$(DRIVER): $(UTILS_OBJECTS) $(CLIENT_OBJECTS) $(DRIVER_OBJECT) $(CLIENT_SRC)
-	$(CC) $(CPPFLAGS) $(EXTFLAGS) -I$(UTILS_INCLUDE) -I$(CLIENT_INCLUDE) -I$(DRIVER_INCLUDE) $(CLIENT_SRC) -o $(TARGET_DIR)/$(DRIVER) $(OBJS)
-
-$(UTILS_OBJECTS): %.o: $(UTILS_INCLUDE)/%.cpp
-	$(CC) -c $(CPPFLAGS) $< -o $(TARGET_DIR)/$@
-
+# Check driver argument.
 test_$(DRIVER):
 ifndef DRIVER
 	$(error you must define the DRIVER argument! For example: "make DRIVER=SimpleDriver")
 else
-	$(info Creating $(DRIVER))
+	$(info Creating $(DRIVER_TARGET).)
 endif
 
-clean:
-	rm -f $(TARGET_DIR)/*
+# Build UDP client objects.
+$(UDP_CLIENT_OBJS): %.o: $(UDP_CLIENT_DIR)/%.cpp
+	$(CC) -c $(CXXFLAGS) $< -o $(TARGET_DIR)/$@
 
+# Build auxiliary objects.
+$(UTILS_OBJS): %.o: $(UTILS_DIR)/%.cpp
+	$(CC) -c $(CXXFLAGS) $< -o $(TARGET_DIR)/$@
+
+# Build driver object.
+$(DRIVER_OBJ): $(UTILS_OBJS) $(DRIVER_SRC) 
+	$(CC) -c $(CXXFLAGS) -I$(UDP_CLIENT_DIR) -I$(UTILS_DIR) -I$(DRIVER_DIR) $(DRIVER_SRC) -o $(TARGET_DIR)/$(DRIVER_OBJ)
+
+# Build driver client. 
+$(DRIVER_TARGET): $(OBJS) $(DRIVER_OBJ) $(UDP_CLIENT_SRC)
+	$(CC) $(CXXFLAGS) $(EXTFLAGS) -I$(UTILS_DIR) -I$(UDP_CLIENT_DIR) -I$(DRIVER_DIR) $(UDP_CLIENT_SRC) -o $(TARGET_DIR)/$(DRIVER_TARGET) $(OBJS)
+
+# Build target directory.
 $(TARGET_DIR):
 	mkdir $(TARGET_DIR)
+
+# Cleanup.
+clean:
+	rm -f $(TARGET_DIR)/*
