@@ -1,4 +1,3 @@
-
 /** @file PID.h
   *
   * Describes a PID controller. 
@@ -23,8 +22,8 @@ class PIDController {
 	/** Constructor. */
 	PIDController(float p /** Proportional gain. */ ,
 				  float i /** Integral gain. */ ,
-				  float d /** Derivative gain. */ ):
-	  Kp(p), Ki(i), Kd(d), previous_error(0), integral(0) {
+				  float d /** Derivative gain. */ ) : 
+	Kp(p), Ki(i), Kd(d), previous_error(0), integral(0) {
 	}
 
 	/** Computes the output based on the previous iteration and the current situation. */

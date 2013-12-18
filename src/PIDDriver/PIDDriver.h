@@ -10,8 +10,6 @@
 #ifndef PID_DRIVER_H
 #define PID_DRIVER_H
 
-#include <iostream>
-#include <fstream>
 #include <string.h>
 #include "BaseDriver.h"
 #include "SimpleParser.h"
@@ -24,6 +22,7 @@
 #define PID_DT 0.02
   /** @todo verificar se este valor está correto. */
 
+#define FINAL_SPEED 160 /** @todo Definir corretamente */
 #define KP 0.1   /** @todo Definir corretamente */
 #define KI 0.01  /** @todo Definir corretamente */
 #define KD 0.005 /** @todo Definir corretamente */
@@ -40,18 +39,15 @@ class PIDDriver:public BaseDriver {
 	PIDDriver();
 
 	/** Destructor. */
-	virtual ~ PIDDriver();
+	virtual ~PIDDriver();
 
 	/** Driving function.
 	 * @param sensors the current world state.
 	 * @return a string representing the controlling action to perform. */
 	virtual string drive(string sensors);
  protected:
-	void loadParameterFile();
-	void loadParameterDefault();
 
 	Logger log; // Logger instance
-	ifstream param_stream; // Can't pass streams as parameters
 };
 
 #endif /* PID_DRIVER_H */

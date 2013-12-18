@@ -1,4 +1,3 @@
-
 /** @file PIDDriver.cpp
   *
   * Defines the PIDDriver.
@@ -8,11 +7,7 @@
   */
 
 #include <math.h>
-#include <iostream>
 #include <fstream>
-#include <string>
-#include <vector>
-#include <stdlib.h>
 
 #include "CarControl.h"
 #include "CarState.h"
@@ -60,69 +55,34 @@ getSpeed(CarState & cs) {
  */
 PIDDriver::PIDDriver():BaseDriver(), speedPID(KP, KI, KD) {
 
-  // Ugly hack: can't pass an ofstream as a paramter of a function, 
-  // so we need to load it as a class attribute, and close it there after
-  // we're done with it.
+    char paramFile[] =
+        "/home/gnramos/Documents/Dropbox/CIC/Dropbox/workspace/TORCS/mult/data/parameter.par";
 
+    float final_speed, p, i, d;
+  
 
-  /* Beware, Ugly hacks ahead:
-   * 
-   * Hack 1: Ideally, we want the filename to be passed as a parameter.
-   * But this requires changing client.cpp and Basedriver.h
-   * For now, we use a fixed file name string.
-   * 
-   * Hack 2: C++ doesn't seem to like passing file streams as function 
-   * parameters. So the input file is stored as a class attribute. Probably 
-   * there is a more proper way to do this.
-   */
-  param_stream.open ("parameter.par", ios::in); 
+    /**
+    * load parameter values from a file
+    *
+    * @TODO: This statically loads parameters in a fixed order inside the 
+    * file ("param1,param2,param3"). We probably want to change it to be a bit 
+    * more smart and flexible ("paramname=paramvalue", one per line, 
+    * or maybe read some xml file format)
+    */
+    std::ifstream ifs;
+    ifs.open(paramFile, std::ifstream::in);
+    if (ifs.is_open()) {
+        log.info("Loading parameters from file.");
+        ifs >> final_speed >> p >> i >> d;
+    } else {
+        log.info("Loading default parameters.");
+        final_speed = FINAL_SPEED, p = KP, i = KI, d = KD;
+    }
+    ifs.close();
 
-  // test if the parameter file was found
-  if (param_stream.is_open()) {
-    log.info("Loading Parameters from file");
-    loadParameterFile();
-    param_stream.close();
-  } else {
-    log.info("Loading Default Parameters");
-    loadParameterDefault();
-  }
-};
-
-/**
- * load parameter values from a file
- *
- * @TODO: This statically loads parameters in a fixed order inside the 
- * file ("param1,param2,param3"). We probably want to change it to be a bit 
- * more smart and flexible ("paramname=paramvalue", one per line, 
- * or maybe read some xml file format)
- *
- */
-void
-PIDDriver::loadParameterFile() {
-  string item;
-  std::vector<string> params;
-
-
-  while (getline(param_stream,item,',')) { 
-    params.push_back(item);
-  }
-
-  finalSpeed = atof(params[0].c_str());
-  speedPID.set(atof(params[1].c_str()), 
-	       atof(params[2].c_str()),
-	       atof(params[3].c_str()));
-
+    finalSpeed = final_speed;
+    speedPID.set(p, i, d);
 }
-
-/**
- * load default values for the parameters
- */
-void
-PIDDriver::loadParameterDefault() {
-  finalSpeed = 160;
-  speedPID.set(0.1,0.01,0.005);
-}
-
 
 PIDDriver::~PIDDriver()
 {
