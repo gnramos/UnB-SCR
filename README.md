@@ -1,6 +1,6 @@
-TORCS
+UnB-SCR
 =====
-For lack of a better name, this project is currently called _TORCS_.
+For lack of a better name, this project is currently called _UnB-SCR_.
 
 Description
 -----------
@@ -27,12 +27,12 @@ To check if it's working, just run TORCS, configure a race in which a driver is
 _scr_server_ driver and then run the executable file you created. You can test 
 this with SCR's _SimpleDriver_ files that come with this project as follows:
 
-<code>make client DRIVER=SimpleDriver
-torcs &</code>
+    $ make client DRIVER=SimpleDriver
+    $ torcs &
 
-And then (assuming you started a properly configures race):
+And then (assuming you started a properly configured race):
 
-<code>./bin/SimpleDriverCient </code>
+    ./bin/SimpleDriverCient
 
 Observations
 ------------
