@@ -32,7 +32,7 @@ this with SCR's _SimpleDriver_ files that come with this project as follows:
 
 And then (assuming you started a properly configured race):
 
-    ./bin/SimpleDriverCient
+    ./bin/SimpleDriverClient
 
 Observations
 ------------
