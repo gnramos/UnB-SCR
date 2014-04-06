@@ -13,7 +13,6 @@
 #include <string.h>
 #include "BaseDriver.h"
 #include "SimpleParser.h"
-#include "Logger.h"
 
 #include "PID.h"
 
@@ -36,7 +35,7 @@ class PIDDriver:public BaseDriver {
   public:
 
 	/** Constructor. */
-	PIDDriver();
+	PIDDriver(float final_speed = FINAL_SPEED);
 
 	/** Destructor. */
 	virtual ~PIDDriver();
@@ -45,9 +44,6 @@ class PIDDriver:public BaseDriver {
 	 * @param sensors the current world state.
 	 * @return a string representing the controlling action to perform. */
 	virtual string drive(string sensors);
- protected:
-
-	Logger log; // Logger instance
 };
 
 #endif /* PID_DRIVER_H */

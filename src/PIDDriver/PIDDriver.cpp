@@ -11,7 +11,6 @@
 
 #include "CarControl.h"
 #include "CarState.h"
-#include "Logger.h"
 #include "PIDDriver.h"
 
 
@@ -53,35 +52,8 @@ getSpeed(CarState & cs) {
 /**
  * Decides whether to load a parameter file, or load default parameter values.
  */
-PIDDriver::PIDDriver():BaseDriver(), speedPID(KP, KI, KD) {
-
-    char paramFile[] =
-        "/home/gnramos/Documents/Dropbox/CIC/Dropbox/workspace/TORCS/mult/data/parameter.par";
-
-    float final_speed, p, i, d;
-  
-
-    /**
-    * load parameter values from a file
-    *
-    * @TODO: This statically loads parameters in a fixed order inside the 
-    * file ("param1,param2,param3"). We probably want to change it to be a bit 
-    * more smart and flexible ("paramname=paramvalue", one per line, 
-    * or maybe read some xml file format)
-    */
-    std::ifstream ifs;
-    ifs.open(paramFile, std::ifstream::in);
-    if (ifs.is_open()) {
-        log.info("Loading parameters from file.");
-        ifs >> final_speed >> p >> i >> d;
-    } else {
-        log.info("Loading default parameters.");
-        final_speed = FINAL_SPEED, p = KP, i = KI, d = KD;
-    }
-    ifs.close();
-
-    finalSpeed = final_speed;
-    speedPID.set(p, i, d);
+PIDDriver::PIDDriver(float final_speed) : BaseDriver(), finalSpeed(final_speed), speedPID(KP, KI, KD) {
+  /* @todo assert final_speed > 0*/
 }
 
 PIDDriver::~PIDDriver()
