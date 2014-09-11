@@ -1,89 +1,75 @@
 # @file Makefile
 # 
-# @author Claus Aranha (caranha@cs.tsukuba.ac.jp)
 # @author Guilherme N. Ramos (gnramos@unb.br)
+#
+# - Assuming POSIX environment (for bc command).
+# - Each driver should have unique name (for logging purposes)
 # 
-# Builds the controller specified by DRIVER argument. This assumes a few things:
-# 1) The files are set in the src/DRIVER directory.
-# 2) The controller files are DRIVER.h & DRIVER.cpp (extra .h files within the
-# folder should work, but any more .cpp files will break things).
-# 
-# The idea is to create .o files and the executable file in the /bin directory.
-# After all is done, just start the TORCS server and run the executable to see
-# your client race. In theory, everything should work automagically...
-# 
-# Example (assuming you have TORCS running with a race waiting for the clients:
-#   make client DRIVER=SimpleDriver
-#   ./bin/SimpleDriverClient
+# Builds the controllers specified by DRIVERS argument and starts a simulation
+# with them, considering the configuration specified in RACE_XML argument. This 
+# assumes a few things:
+# 1) The driver files configured for use with ClientMakefile.
+# 2) The XML race file is configured properly for the number of drivers.
+#
+# Observations:
+# 1) RACE_XML must be an absolute path to the file.
+# 2) Racers will be positioned according to the order given in DRIVERS.
+# 3) Multiple instances of the same driver are allowed, but logging considers the
+# name only (thus all will be logged into the same file).
+#
+# Example:
+#   make DRIVERS="SimpleDriver GrandmaDriver" RACE_XML=~/race_2.xml
+#
+#
+# To-do
+# 1) Fix need for bc command.
+# 2) Log multiple instances of same driver in multiple files.
 
-# Set the compiler.
-CC =  g++
+# Set starting port.
+FREE_PORT ?= 3001
 
-# Set compilation flags.
-CXXFLAGS = -Wall
-#CXXFLAGS = -Wall -g -D __UDP_CLIENT_VERBOSE__
-# UDP Client (in client.cpp) flags.
-EXTFLAGS = -D __DRIVER_CLASS__=$(DRIVER) -D __DRIVER_INCLUDE__='"$(DRIVER).h"'
+# Set simulator log file.
+TORCS_LOG ?= TORCS
 
-# Set source and target dirs.
-TARGET_DIR = bin
-SRC_DIR = src
+##########
+# Macros #
+##########
 
-# Client source files.
-UDP_CLIENT_DIR  = $(SRC_DIR)/client
-UDP_CLIENT_SRC  = $(wildcard $(UDP_CLIENT_DIR)/*.cpp)
-UDP_CLIENT_MAIN = $(UDP_CLIENT_DIR)/client.cpp
-UDP_CLIENT_SRC := $(filter-out $(UDP_CLIENT_MAIN), $(UDP_CLIENT_SRC))
+# Log date into given file.
+define log_date
+	@echo "***********************************" >> $1
+	@date +'%y.%m.%d %H:%M:%S' >> $1
+endef
 
-# Driver source files.
-DRIVER_DIR    = $(SRC_DIR)/$(DRIVER)
-DRIVER_SRC    = $(wildcard $(DRIVER_DIR)/*.cpp)
-DRIVER_SRC   := $(DRIVER_SRC) $(UDP_CLIENT_MAIN)
-DRIVER_TARGET = $(DRIVER)Client
+# Runs the simulator for the given race, logging results into given file.
+define run_server
+	$(info Preparing simulation...)
+	$(call log_date,$1.log)
+	torcs -r $(RACE_XML) >> $1.log &
+endef
 
-# Auxiliary source files.
-UTILS_DIR   = $(SRC_DIR)/utils
-UTILS_SRC  = $(wildcard $(UTILS_DIR)/*.cpp)
-
-# Setup objects.
-UDP_CLIENT_OBJS := $(notdir $(UDP_CLIENT_SRC:.cpp=.o))
-UTILS_OBJS      := $(notdir $(UTILS_SRC:.cpp=.o))
-DRIVER_OBJS      = $(UDP_CLIENT_OBJS) $(UTILS_OBJS)
-DRIVER_OBJS     := $(addprefix $(TARGET_DIR)/,$(DRIVER_OBJS))
+# Runs the client racers, logging the results. 
+define run_client
+	$(call log_date,$1.log)
+	./bin/$1 port:$(FREE_PORT) >> $1.log &
+	$(eval FREE_PORT := $(shell echo $(FREE_PORT)+1 | bc))
+endef
 
 ###########
 # Targets #
 ###########
 
-# Build driver client.
-client: | target_dir $(DRIVER_TARGET)
+# Run simulation & log results.
+all: test_race drivers
+	$(call run_server,$(TORCS_LOG))
+	$(foreach DRIVER,$(DRIVERS),$(call run_client,$(DRIVER)))
 
-# Check driver argument.
-test_$(DRIVER):
-ifndef DRIVER
-	$(error you must define the DRIVER argument! For example: "make client DRIVER=SimpleDriver")
-else
-	$(info Creating $(DRIVER_TARGET).)
+# Check for XML config file.
+test_race:
+ifeq (,$(wildcard $(RACE_XML)))
+	$(error Config file "$(RACE_XML)" does not exist!) 
 endif
 
-# Build UDP client objects.
-$(UDP_CLIENT_OBJS): %.o : $(UDP_CLIENT_DIR)/%.cpp
-	$(CC) -c $(CXXFLAGS) $< -o $(TARGET_DIR)/$@
-
-# Build auxiliary objects.
-$(UTILS_OBJS): %.o : $(UTILS_DIR)/%.cpp
-	$(CC) -c $(CXXFLAGS) $< -o $(TARGET_DIR)/$@
-
-# Build driver object.
-$(DRIVER_TARGET): test_$(DRIVER) $(DRIVER_SRC) $(UDP_CLIENT_OBJS) $(UTILS_OBJS)
-	$(CC) $(CXXFLAGS) $(EXTFLAGS) $(DRIVER_SRC) -I$(UDP_CLIENT_DIR) -I$(UTILS_DIR) -I$(DRIVER_DIR) -o $(TARGET_DIR)/$(DRIVER_TARGET) $(DRIVER_OBJS)
-
-# Build target directory.
-target_dir:
-	@mkdir -p $(TARGET_DIR)
-
-# Cleanup.
-clean:
-	rm -rf $(TARGET_DIR)
-	find . -name "*~" -exec rm {} \;
-	find . -name "*.o" -exec rm {} \;
+# Build drivers.
+drivers:
+	$(foreach DRIVER, $(DRIVERS), $(MAKE) -f ClientMakefile DRIVER=$(DRIVER);)
