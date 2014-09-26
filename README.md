@@ -31,14 +31,14 @@ your client - let's call him _EasyDriver_. So you should create the "EasyDriver"
 directory in the "src" folder and put your controller files (```EasyDriver.h``` and 
 ```EasyDriver.cpp``` there). Basically, EasyDriver must inherit BaseDriver and 
 implement the "drive" function (see the manual for simulation I/O details). After
-that, just run "```make client DRIVER=EasyRider```" and you'll get your client 
+that, just run "```make -f ClientMakefile DRIVER=EasyRider```" and you'll get your client 
 executable for TORCS simulations.
 
 To check if it's working, just run TORCS, configure a race in which a driver is
 _scr_server_ driver and then run the executable file you created. You can test 
 this with SCR's _SimpleDriver_ files that come with this project as follows:
 
-    $ make client DRIVER=SimpleDriver
+    $ make -f ClientMakefile DRIVER=SimpleDriver
     $ torcs &
 
 And then (assuming you started a properly configured race):
