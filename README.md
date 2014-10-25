@@ -11,7 +11,9 @@ Installation
 ------------
 
 As per the "Simulated Car Racing Championship Competition Software Manual" 
-([v2 - April 2013](http://arxiv.org/pdf/1304.1672v2)), install TORCS 1.3.6.
+([v2 - April 2013](http://arxiv.org/pdf/1304.1672v2)), install TORCS 1.3.6. The
+[setup.sh](setup.sh) script should do it, but take a look at the 
+instructions first, you may want to do it by yourself.
 
 Download this project's files anywhere you want them (say, "```~/workspace"```), 
 the client works through UDP.
